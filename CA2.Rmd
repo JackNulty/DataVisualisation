@@ -1,0 +1,292 @@
+---
+title: "CA2 Growth of Digital Games"
+output:
+  word_document: default
+  html_document: default
+date: "2025-04-02"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Introduction
+The gaming industry has experienced a massive growth over the past few decades, with the rise of Steam playing a pivitol role in shaping how games are published and distributed. Steam hosts a large library of games spanning over 90,000 with many genres, developers and price points. With this vast choice for players and developers understanding the trends and patterns in the data can be beneficial for both parties. This report leverages the Steam Games Dataset 2025 which includes all key information such as release dates, genre tags, developer and publisher information, and user reviews. The dataset is used to explore the growth of digital games on Steam and to identify the key trends and patterns in the data.In this report I will be exploring these trends using visualisation techniques in R, examples of things I will explore are how pricing can effect user reviews and how certain genres have grown and become more dominant over time. The findings will show a broader understanding of how game developers and publishers strategise their releases and how the pricing model may impact player perception and how the genre lines up with current trends. This report will provide meaningful insights for game developers and publishers to make informed decisions on their game releases and marketing strategies.
+
+# Research Questions / Rational
+## 1. How does the frequeny / number of DLC's for a game effect user reviews?
+Some developers focus on keeping their games running for years by adding gameplay mechanics with regular updates and DLC I want to investigate if this has a positive or negative effect on user reviews. I aim to see if the number of DLC's released for a game has an impact on the user reviews and how this has changed over time. I think this is interesting as some players may feel that the game is being milked for money and that the DLC's should have been included in the base game. By analysing this data I can see how the number of DLC's has impacted the user reviews.
+
+## 2. How does the pricing of games affect user reviews?
+The price of games has always been a crucial factor in players decision making when buying a game but in this research question I want to figure out how the pricing of games affects user reviews. I aim to see if there is a correlation between the price of games and the user reviews and how this has changed over time. I think this is interesting as higher priced games tend to be reviewed more harshly by players due to the higher expectations they have for the game. Players could also be more forgiving of lower priced games as they are more likely to take a chance on a cheaper game. By analysing this data I can see how the pricing of games has impacted the user reviews.
+
+## 3. What genres have had trending growth over the years?
+The third research question aims to understand what genres have had trending growth over the years. I aim to see if certain genres have become more popular over time and how this has impacted the sales of games in those genres. This is important as it can help developers and publishers understand what genres are popular and how they can capitalise on this trend. I want to analyse the number of releases per genre and see how this has changed over time by picking a few popular genres and seeing how they have grown over the years compared to other genres.
+
+## 4. How has the AAA landscape changed over the years?
+The fourth research question aims to understand how the AAA landscape has changed over the years. I aim to see how the number of AAA games has increased over time and how this has impacted the sales of games in this category. I also want to examine the price increase of these games and the user reviews since these price changes have come into effect.I want to understand the shift in the AAA landscape and see how the evolution of these studios and game quality with regular price increases has changed the publics opinion of AAA games and studios.
+
+
+
+```{r echo=FALSE}
+#install.packages("dplyr")
+#install.packages("ggplot2")
+#install.packages("lubridate")
+#install.packages("tidyr")
+# Load the required libraries
+library(dplyr)
+library(ggplot2)
+library(lubridate)
+library(tidyr)
+library(stringr)
+```
+
+```{r echo=FALSE}
+# Load the dataset
+steam_games <- read.csv("games_march2025_cleaned.csv")
+```
+
+```{r echo=FALSE}
+# Display the first few rows of the dataset
+#head(steam_games)
+```
+
+```{r echo=FALSE}
+# Filter the data for pct_pos_total from 40 to 100
+steam_games_filtered <- steam_games %>%
+  filter(pct_pos_total >= 40 & pct_pos_total <= 100, dlc_count <= 75) %>%
+  arrange(desc(num_reviews_total)) %>%
+  head(200)
+
+# Find the highest number of DLCs
+max_dlc <- max(steam_games_filtered$dlc_count, na.rm = TRUE)
+```
+
+```{r echo=FALSE}
+# Visualize the relationship between DLC count and average positive reviews
+ggplot(steam_games_filtered, aes(x = pct_pos_total, y = dlc_count)) +
+  geom_point(alpha = 0.5) +
+  scale_x_continuous(limits = c(40, 100)) +  # Limit the x-axis from 40 to 100
+  scale_y_continuous(limits = c(0, max_dlc)) +  # Limit the y-axis from 0 to max DLC count
+  labs(title = "DLC Count vs Positive Review Percentage",
+       x = "Percentage of Positive Reviews",
+       y = "Number of DLCs") +
+  theme_minimal()
+```
+
+
+```{r echo=FALSE}
+# Filter the dataset:
+# - Remove free games (price > 0)
+# - Ensure positive review percentage is between 40-100
+# - Take the top 200 games based on total reviews
+steam_games_filtered <- steam_games %>%
+  filter(price > 2, pct_pos_total >= 40 & pct_pos_total <= 100) %>%
+  arrange(desc(num_reviews_total)) %>%
+  head(200)  # Take the top 200 games based on total reviews
+
+# Create the plot
+ggplot(steam_games_filtered, aes(x = price, y = pct_pos_total)) +
+  geom_point(alpha = 0.6, color = "#2ca02c") +  # Set point transparency and color
+  geom_smooth(method = "loess", color = "blue", se = TRUE) +  # Add trend line
+  scale_x_continuous(trans = "log10", breaks = c(1, 5, 10, 20, 40, 60, 100)) +  # Log scale for price
+  scale_y_continuous(limits = c(40, 100), breaks = seq(40, 100, 10)) +  # Keep review % between 40-100
+  labs(
+    title = "Game Price vs Positive Review Percentage (Top 200 Most Reviewed Games)",
+    subtitle = "Log-scaled price to improve readability",
+    x = "Game Price (USD)",
+    y = "Percentage of Positive Reviews"
+  ) +
+  theme_minimal(base_size = 14) +  # Set base font size for better readability
+  theme(
+    plot.title = element_text(face = "bold", size = 16),  # Bold and size up the title
+    plot.subtitle = element_text(size = 12),  # Size the subtitle
+    axis.title = element_text(face = "bold", size = 14),  # Bold and size up axis titles
+    axis.text = element_text(size = 12),  # Size up axis text
+    panel.grid.major = element_line(color = "gray90"),  # Lighten major grid lines for cleaner look
+    panel.grid.minor = element_line(color = "gray95")  # Lighten minor grid lines for a softer look
+  )
+```
+
+
+```{r}
+# Convert release_date to year
+steam_games <- steam_games %>%
+  mutate(release_year = year(ymd(release_date)))  # Extract year from release_date
+
+# Select the top 5 most common genres across all years
+top_genres <- steam_games %>%
+  filter(!is.na(genres)) %>%  # Remove missing genres
+  separate_rows(genres, sep = ",") %>%  # Split multiple genres
+  group_by(genres) %>%
+  summarize(total_games = n()) %>%
+  arrange(desc(total_games)) %>%
+  head(5) %>%  # Take the top 5 most common genres
+  pull(genres)  # Get the genre names as a vector
+
+# Select only the years of interest
+selected_years <- c(2011, 2014, 2017, 2020, 2023)
+
+# Filter dataset for selected years and top genres
+steam_games_filtered <- steam_games %>%
+  filter(release_year %in% selected_years) %>%  # Keep only selected years
+  separate_rows(genres, sep = ",") %>%  # Split multiple genres
+  filter(genres %in% top_genres) %>%  # Keep only top genres
+  group_by(release_year, genres) %>%
+  summarize(game_count = n(), .groups = "drop")  # Count games per year per genre
+```
+
+
+```{r}
+ggplot(steam_games_filtered, aes(x = genres, y = game_count, fill = genres)) +
+  geom_bar(stat = "identity", width = 0.6) +  # Bar chart
+  facet_wrap(~ release_year, ncol = 3) +  # Create separate graphs for each year
+  scale_y_continuous(expand = expansion(mult = c(0, 0.1))) +  # Adjust spacing
+  labs(
+    title = "Top 5 Game Genres Over Selected Years",
+    subtitle = "Comparing most popular genres in 2011, 2014, 2017, 2020, and 2023",
+    x = "Genre",
+    y = "Number of Games Released",
+    fill = "Genre"
+  ) +
+  theme_minimal(base_size = 14) +  # Clean theme
+  theme(
+    plot.title = element_text(face = "bold", size = 16),
+    plot.subtitle = element_text(size = 12),
+    axis.title = element_text(face = "bold", size = 14),
+    axis.text.x = element_text(angle = 45, hjust = 1),  # Rotate x-axis labels
+    legend.position = "none",  # Hide legend to avoid redundancy
+    strip.text = element_text(face = "bold", size = 14)  # Bold year labels
+  )
+```
+
+```{r}
+# Convert release_date to year
+steam_games <- steam_games %>%
+  mutate(release_year = year(ymd(release_date)))  
+
+# Clean genre column: Remove brackets and extra spaces
+steam_games <- steam_games %>%
+  mutate(genres = str_replace_all(genres, "[\\[\\]']", "")) %>%  # Remove square brackets and quotes
+  mutate(genres = str_trim(genres))  # Remove leading/trailing spaces
+
+# Filter dataset for "Massively Multiplayer" genre
+massively_multiplayer_growth <- steam_games %>%
+  filter(!is.na(genres)) %>%
+  separate_rows(genres, sep = ", ") %>%  # Split genres correctly
+  filter(genres == "Massively Multiplayer") %>%  # Only keep this genre
+  group_by(release_year) %>%
+  summarize(game_count = n(), .groups = "drop")  
+
+# Create the line chart
+ggplot(massively_multiplayer_growth, aes(x = release_year, y = game_count)) +
+  geom_line(color = "#1f77b4", size = 1.2) +
+  geom_point(color = "#1f77b4", size = 3) +
+  scale_x_continuous(breaks = seq(2000, 2024, 4)) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.1))) +
+  labs(
+    title = "Growth of 'Massively Multiplayer' Genre Over the Years",
+    subtitle = "Number of games released in this genre from 2000 to 2024",
+    x = "Year",
+    y = "Number of Games Released"
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(
+    plot.title = element_text(face = "bold", size = 16),
+    plot.subtitle = element_text(size = 12),
+    axis.title = element_text(face = "bold", size = 14),
+    axis.text = element_text(size = 12),
+    panel.grid.major = element_line(color = "gray90"),
+    panel.grid.minor = element_line(color = "gray95")
+  )
+```
+
+```{r}
+# Convert release_date to year
+steam_games <- steam_games %>%
+  mutate(release_year = year(ymd(release_date)))
+
+# Define AAA games (Price > $40)
+aaa_games <- steam_games %>%
+  filter(price > 40, !is.na(release_year)) %>%
+  group_by(release_year) %>%
+  summarize(num_aaa_games = n(), .groups = "drop")
+
+# Create the line chart
+ggplot(aaa_games, aes(x = release_year, y = num_aaa_games)) +
+  geom_line(color = "#e15759", size = 1.2) +
+  geom_point(color = "#e15759", size = 3) +
+  scale_x_continuous(breaks = seq(min(aaa_games$release_year), max(aaa_games$release_year), 2)) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.1))) +
+  labs(
+    title = "Number of AAA Games Released Per Year",
+    subtitle = "Games with a price above $40",
+    x = "Year",
+    y = "Number of AAA Games Released"
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(
+    plot.title = element_text(face = "bold", size = 16),
+    plot.subtitle = element_text(size = 12),
+    axis.title = element_text(face = "bold", size = 14),
+    axis.text = element_text(size = 12)
+  )
+```
+
+
+```{r}
+# Calculate average price of AAA games per year
+aaa_price_trend <- steam_games %>%
+  filter(price > 40, !is.na(release_year)) %>%
+  group_by(release_year) %>%
+  summarize(avg_price = mean(price, na.rm = TRUE), .groups = "drop")
+
+# Create the line chart
+ggplot(aaa_price_trend, aes(x = release_year, y = avg_price)) +
+  geom_line(color = "#4e79a7", size = 1.2) +
+  geom_point(color = "#4e79a7", size = 3) +
+  scale_x_continuous(breaks = seq(min(aaa_price_trend$release_year), max(aaa_price_trend$release_year), 2)) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.1))) +
+  labs(
+    title = "Average Price of AAA Games Over Time",
+    subtitle = "Price trend for games priced above $40",
+    x = "Year",
+    y = "Average Price (USD)"
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(
+    plot.title = element_text(face = "bold", size = 16),
+    plot.subtitle = element_text(size = 12),
+    axis.title = element_text(face = "bold", size = 14),
+    axis.text = element_text(size = 12)
+  )
+```
+
+```{r}
+aaa_games %>%
+  filter(!is.na(genres)) %>%
+  separate_rows(genres, sep = ", ") %>%
+  group_by(release_year, genres) %>%
+  summarize(count = n(), .groups = "drop") %>% 
+  ggplot(aes(x = release_year, y = count, fill = genres)) +
+  geom_bar(stat = "identity") +
+  labs(
+    title = "Trends of AAA Game Genres Over Time",
+    x = "Year",
+    y = "Number of AAA Games by Genre"
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+
+
+
+
+
+
+
+
+
+
+
