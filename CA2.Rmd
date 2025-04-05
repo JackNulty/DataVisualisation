@@ -3,30 +3,33 @@ title: "CA2 Growth of Digital Games"
 output:
   word_document: default
   html_document: default
-date: "2025-04-02"
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
 ```
 
 # Introduction
+
 The gaming industry has experienced a massive growth over the past few decades, with the rise of Steam playing a pivitol role in shaping how games are published and distributed. Steam hosts a large library of games spanning over 90,000 with many genres, developers and price points. With this vast choice for players and developers understanding the trends and patterns in the data can be beneficial for both parties. This report leverages the Steam Games Dataset 2025 which includes all key information such as release dates, genre tags, developer and publisher information, and user reviews. The dataset is used to explore the growth of digital games on Steam and to identify the key trends and patterns in the data.In this report I will be exploring these trends using visualisation techniques in R, examples of things I will explore are how pricing can effect user reviews and how certain genres have grown and become more dominant over time. The findings will show a broader understanding of how game developers and publishers strategise their releases and how the pricing model may impact player perception and how the genre lines up with current trends. This report will provide meaningful insights for game developers and publishers to make informed decisions on their game releases and marketing strategies.
 
 # Research Questions / Rational
+
 ## 1. How does the frequeny / number of DLC's for a game effect user reviews?
+
 Some developers focus on keeping their games running for years by adding gameplay mechanics with regular updates and DLC I want to investigate if this has a positive or negative effect on user reviews. I aim to see if the number of DLC's released for a game has an impact on the user reviews and how this has changed over time. I think this is interesting as some players may feel that the game is being milked for money and that the DLC's should have been included in the base game. By analysing this data I can see how the number of DLC's has impacted the user reviews.
 
 ## 2. How does the pricing of games affect user reviews?
+
 The price of games has always been a crucial factor in players decision making when buying a game but in this research question I want to figure out how the pricing of games affects user reviews. I aim to see if there is a correlation between the price of games and the user reviews and how this has changed over time. I think this is interesting as higher priced games tend to be reviewed more harshly by players due to the higher expectations they have for the game. Players could also be more forgiving of lower priced games as they are more likely to take a chance on a cheaper game. By analysing this data I can see how the pricing of games has impacted the user reviews.
 
 ## 3. What genres have had trending growth over the years?
+
 The third research question aims to understand what genres have had trending growth over the years. I aim to see if certain genres have become more popular over time and how this has impacted the sales of games in those genres. This is important as it can help developers and publishers understand what genres are popular and how they can capitalise on this trend. I want to analyse the number of releases per genre and see how this has changed over time by picking a few popular genres and seeing how they have grown over the years compared to other genres.
 
 ## 4. How has the AAA landscape changed over the years?
+
 The fourth research question aims to understand how the AAA landscape has changed over the years. I aim to see how the number of AAA games has increased over time and how this has impacted the sales of games in this category. I also want to examine the price increase of these games and the user reviews since these price changes have come into effect.I want to understand the shift in the AAA landscape and see how the evolution of these studios and game quality with regular price increases has changed the publics opinion of AAA games and studios.
-
-
 
 ```{r echo=FALSE}
 #install.packages("dplyr")
@@ -39,11 +42,18 @@ library(ggplot2)
 library(lubridate)
 library(tidyr)
 library(stringr)
+library(gt)
 ```
 
 ```{r echo=FALSE}
 # Load the dataset
 steam_games <- read.csv("games_march2025_cleaned.csv")
+steam_games <- steam_games %>%
+  mutate(
+    release_year = year(ymd(release_date)),
+    genres = str_replace_all(genres, '\\[|\\]|\"', ""),  # remove brackets and quotes
+    genres = str_trim(genres)  # remove leading/trailing spaces
+  )
 ```
 
 ```{r echo=FALSE}
@@ -74,6 +84,9 @@ ggplot(steam_games_filtered, aes(x = pct_pos_total, y = dlc_count)) +
   theme_minimal()
 ```
 
+# How does the frequeny / number of DLC's for a game effect user reviews?
+
+The graph shows a general disconnect from the number of DLC's compared to the number of positive reviews. The graph does show us some valuable points though, we can see that for games with a very high review percentage there is a general look that we can see that these games tend to recieve small numbers of DLC's which indicates to me that the developers of these games continued support for these games after release due to positive perception. We can also see some games with a lot of DLC's that have a lower review percentage which indicates to me that these games are being milked for money and that the developers are not putting in the effort to make the game better. This is a very interesting trend as it shows that the number of DLC's does not always correlate with the positive reviews and that some games can be successful with a small number of DLC's while others can be unsuccessful with a large number of DLC's.
 
 ```{r echo=FALSE}
 # Filter the dataset:
@@ -108,59 +121,141 @@ ggplot(steam_games_filtered, aes(x = price, y = pct_pos_total)) +
   )
 ```
 
+# How does the pricing of games affect user reviews?
 
-```{r}
+Taking a deeper dive into the meaning of this graph I can see that there is a non-linear relationship between the price of games and the percentage of positive reviews. The graph shows the very cheap games have a slightly lower positive percentage than the games in the range of about 20-30. But we also see as games get above this range players seem to be more harsh in the reviews as I think that these players have a higher expectation of the game based on the price that they paid. We can also see that there is outliers among the data as there is low rated games in in all ranges which shows that no matter the price games can be rated low. But in general we have seen that the price of games does have an impact on player perception and forgiveness for flaws within games.
+
+```{r echo=FALSE}
 # Convert release_date to year
 steam_games <- steam_games %>%
-  mutate(release_year = year(ymd(release_date)))  # Extract year from release_date
+  mutate(release_year = year(ymd(release_date)))
 
-# Select the top 5 most common genres across all years
-top_genres <- steam_games %>%
-  filter(!is.na(genres)) %>%  # Remove missing genres
-  separate_rows(genres, sep = ",") %>%  # Split multiple genres
+steam_games <- steam_games %>%
+  mutate(
+    release_year = year(ymd(release_date)),
+    genres = str_replace_all(genres, '\\[|\\]|\"', ""),     # Remove brackets and quotes
+    genres = str_trim(genres)                               # Trim whitespace
+  ) %>%
+  separate_rows(genres, sep = ",") %>%
+  mutate(
+    genres = str_to_lower(str_trim(genres)),                # Standardize case
+    genres = if_else(str_detect(genres, "rpg"), "RPG", genres),  # Group all RPG-related genres
+    genres = str_to_title(genres) 
+  )
+
+# Get top 5 most common genres overall
+top_genres_raw <- steam_games %>%
+  filter(!is.na(genres)) %>%
+  separate_rows(genres, sep = ",") %>%
+  mutate(genres = str_trim(genres)) %>%  # trim again after splitting
   group_by(genres) %>%
-  summarize(total_games = n()) %>%
-  arrange(desc(total_games)) %>%
-  head(5) %>%  # Take the top 5 most common genres
-  pull(genres)  # Get the genre names as a vector
+  summarize(total_games = n(), .groups = "drop") %>%
+  arrange(desc(total_games))
 
-# Select only the years of interest
-selected_years <- c(2011, 2014, 2017, 2020, 2023)
+# Remove duplicates and take the top 5 unique ones
+top_genres <- top_genres_raw %>%
+  distinct(genres, .keep_all = TRUE) %>%
+  slice_head(n = 5) %>%
+  pull(genres)
 
-# Filter dataset for selected years and top genres
+# Define selected years
+selected_years <- c(2011,2012,2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023)
+
+# Filter and reshape for genre percentage per year
 steam_games_filtered <- steam_games %>%
-  filter(release_year %in% selected_years) %>%  # Keep only selected years
-  separate_rows(genres, sep = ",") %>%  # Split multiple genres
-  filter(genres %in% top_genres) %>%  # Keep only top genres
+  filter(release_year %in% selected_years, !is.na(genres)) %>%
+  separate_rows(genres, sep = ",") %>%
+  filter(genres %in% top_genres) %>%
   group_by(release_year, genres) %>%
-  summarize(game_count = n(), .groups = "drop")  # Count games per year per genre
+  summarize(genre_count = n(), .groups = "drop")
+
+# Count total games released each selected year (with any genre)
+total_per_year <- steam_games %>%
+  filter(release_year %in% selected_years) %>%
+  separate_rows(genres, sep = ",") %>%
+  filter(genres %in% top_genres) %>%
+  group_by(release_year) %>%
+  summarize(total_games = n(), .groups = "drop")
+
+# Join and calculate percentage
+genre_percentages <- steam_games_filtered %>%
+  left_join(total_per_year, by = "release_year") %>%
+  mutate(percentage = 100 * genre_count / total_games)
 ```
 
-
-```{r}
-ggplot(steam_games_filtered, aes(x = genres, y = game_count, fill = genres)) +
-  geom_bar(stat = "identity", width = 0.6) +  # Bar chart
-  facet_wrap(~ release_year, ncol = 3) +  # Create separate graphs for each year
-  scale_y_continuous(expand = expansion(mult = c(0, 0.1))) +  # Adjust spacing
+```{r echo=FALSE}
+ggplot(genre_percentages, aes(x = factor(release_year), y = percentage, fill = genres)) +
+  geom_bar(stat = "identity", position = "dodge", width = 0.7) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.1))) +
   labs(
-    title = "Top 5 Game Genres Over Selected Years",
-    subtitle = "Comparing most popular genres in 2011, 2014, 2017, 2020, and 2023",
-    x = "Genre",
-    y = "Number of Games Released",
+    title = "Percentage of Games by Top 5 Genres Over Selected Years",
+    subtitle = "Each bar shows the proportion of games in each genre per year",
+    x = "Release Year",
+    y = "Percentage of Games",
     fill = "Genre"
   ) +
-  theme_minimal(base_size = 14) +  # Clean theme
+  theme_minimal(base_size = 14) +
   theme(
     plot.title = element_text(face = "bold", size = 16),
     plot.subtitle = element_text(size = 12),
     axis.title = element_text(face = "bold", size = 14),
-    axis.text.x = element_text(angle = 45, hjust = 1),  # Rotate x-axis labels
-    legend.position = "none",  # Hide legend to avoid redundancy
-    strip.text = element_text(face = "bold", size = 14)  # Bold year labels
+    legend.position = "right",
+    axis.text.x = element_text(size = 12),
+    axis.text.y = element_text(size = 12)
   )
 ```
 
 ```{r}
+# Get all top genres across selected years
+top_genres_all_years <- steam_games %>%
+  filter(release_year %in% selected_years) %>%
+  count(release_year, genres, sort = TRUE) %>%
+  group_by(release_year) %>%
+  slice_max(n, n = 5) %>%
+  ungroup() %>%
+  distinct(genres) %>%
+  pull(genres)
+
+# Assign fixed colours
+genre_palette <- setNames(RColorBrewer::brewer.pal(n = length(top_genres_all_years), "Set3"), top_genres_all_years)
+
+for (yr in selected_years) {
+  year_data <- steam_games %>%
+    filter(release_year == yr)
+
+  total_games <- nrow(year_data)
+
+  top5 <- year_data %>%
+    count(genres, sort = TRUE) %>%
+    mutate(percentage = 100 * n / total_games) %>%
+    slice_max(percentage, n = 5)
+
+  p <- ggplot(top5, aes(x = reorder(genres, percentage), y = percentage, fill = genres)) +
+    geom_col(width = 0.6) +
+    geom_text(aes(label = paste0(round(percentage, 1), "%")), hjust = -0.1, size = 4) +
+    coord_flip() +
+    scale_fill_manual(values = genre_palette) +  # 👈 Use consistent colors
+    labs(
+      title = paste("Top 5 Game Genres in", yr),
+      subtitle = "Shown as percentage of all games released that year",
+      x = "Genre",
+      y = "Percentage of Games"
+    ) +
+    theme_minimal(base_size = 14) +
+    theme(
+      plot.title = element_text(face = "bold", size = 18),
+      plot.subtitle = element_text(size = 12),
+      axis.title = element_text(face = "bold", size = 14),
+      axis.text = element_text(size = 12),
+      legend.position = "none"
+    ) +
+    scale_y_continuous(limits = c(0, max(top5$percentage) + 5))
+
+  print(p)
+}
+```
+
+```{r echo=FALSE}
 # Convert release_date to year
 steam_games <- steam_games %>%
   mutate(release_year = year(ymd(release_date)))  
@@ -201,19 +296,27 @@ ggplot(massively_multiplayer_growth, aes(x = release_year, y = game_count)) +
   )
 ```
 
-```{r}
+# What genres have had trending growth over the years?
+
+These graphs can show us a few interesting things about the trends of game genres over the years, In the first graph we see the percentage of games released in the top 5 genres over the years. We can see the dominance of action games in the early 2010's and how the genre has dropped off slightly in recent years. We can also see the rise of casual games which in turn shows the growth of the gaming industry in these years as more and more casual gamers have started playing which has shifted developers focus to jump into the casual markets as shown in the graph. We can also see a large amount of Indie games released more often by smaller developers trying to make a name for themselves which is still a very steady trend in the industry. We can also see the rise of Massively Multiplayer games in the last few years which is a very interesting trend as it shows that with the increase in computational power and internet speeds that these games are becoming more and more popular.I feel these graphs show a very interesting oversight into the world of game genres and the trends that have come and gone over the years.
+
+```{r echo=FALSE}
 # Convert release_date to year
 steam_games <- steam_games %>%
   mutate(release_year = year(ymd(release_date)))
 
-# Define AAA games (Price > $40)
+# Keep full AAA dataset with genre info
 aaa_games <- steam_games %>%
-  filter(price > 40, !is.na(release_year)) %>%
+  filter(price > 40, !is.na(release_year), !is.na(genres)) %>%
+  select(appid, name, release_year, price, genres)
+
+# Create summary table: number of AAA games per year
+aaa_summary <- aaa_games %>%
   group_by(release_year) %>%
   summarize(num_aaa_games = n(), .groups = "drop")
 
 # Create the line chart
-ggplot(aaa_games, aes(x = release_year, y = num_aaa_games)) +
+ggplot(aaa_summary, aes(x = release_year, y = num_aaa_games)) +
   geom_line(color = "#e15759", size = 1.2) +
   geom_point(color = "#e15759", size = 3) +
   scale_x_continuous(breaks = seq(min(aaa_games$release_year), max(aaa_games$release_year), 2)) +
@@ -233,8 +336,7 @@ ggplot(aaa_games, aes(x = release_year, y = num_aaa_games)) +
   )
 ```
 
-
-```{r}
+```{r echo=FALSE}
 # Calculate average price of AAA games per year
 aaa_price_trend <- steam_games %>%
   filter(price > 40, !is.na(release_year)) %>%
@@ -262,7 +364,7 @@ ggplot(aaa_price_trend, aes(x = release_year, y = avg_price)) +
   )
 ```
 
-```{r}
+```{r echo=FALSE}
 aaa_games %>%
   filter(!is.na(genres)) %>%
   separate_rows(genres, sep = ", ") %>%
@@ -279,14 +381,17 @@ aaa_games %>%
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 
+# How has the AAA landscape changed over the years?
 
+The AAA landscape has changed a lot over the years as we can see from the graphs above. The first graph shows the number of AAA games released per year and we can see that there is a steady increase in the number of AAA games released over the years.This shows that more AAA game developers are showing up or else due to the way I have decided to catagorise AAA games that the increase in price in games in recent years has meant smaller studios games have come up in price in line with older AAA titles. We can see from the graph that the price of these games has steadily risen in recent years with the release of the PS5 and Xbox series X we saw a increase in the price of games to 70 euro which is a large increase from the previous generation of consoles. This has led to a lot of backlash from players as they feel that the games are not worth the price that they are being sold for. This is a similar trend I saw previously in the pricing of games and how it affects user reviews. We can see that the price of AAA games has increased over the years and this has led to a lot of backlash from players as they feel that the games are not worth the price that they are being sold for. This is a similar trend I saw previously in the pricing of games and how it affects user reviews. We can also see that the genres of AAA games have changed over the years with the rise of Massively Multiplayer games for AAA studios as they use these games as potential cash cows for the studio as they use a live-service type game model to keep the game alive and keep players coming back to the game. This is interesting as it shows that the motivation for these big companies is to make money and increase profits for shareholders.
 
+# Conclusion
+This report provided an in-depth analysis on various digital games development and distribution factors through analysis of the Steam Games dataset — from the impact of downloadable content (DLC), through pricing models, to genre trends and the AAA game landscape evolution.
 
+The results showed that although an abundance of DLCs does not automatically translate to a better reception from users, continued post-launch support in moderation is generally tied to positively reviewed games. When it comes to pricing, though, the relationship is distinctly non-linear: games sold for a little bit more than the average get better average review scores than games sold at the bottom or the very top of the pricing spectrum, while pricier games are held to higher standards and typically received more brutal reviews on average.
 
+The evolution of genres over the years mirrored the broader changes in the gaming landscape. I explored the constant presence of action and indie titles, the proliferation of casual games that could be attributed to new gamers and mobile gamers, as well as the rising popularity of massively multiplayer genres — all signaling the market and technological capability changing in their makings.
 
+Finally, the AAA space has changed a lot. Given the growing tension between player expectations and studio strategies as games continue to sell for higher prices, face more scrutiny, and pivot to evermore live-service work and monetisation, it ought to be no surprise that the data reveals a difference between expectations and reality. This reinforces the need for developers — and particularly those in the AAA market — to toe the line between money-grabbing practices and value-oriented game design.
 
-
-
-
-
-
+Overall this shows that with the help of data, developers, publishers and even gamers can better understand what is really going on in our industry, where they can fit themselves into it as we enter an exciting new period. 
