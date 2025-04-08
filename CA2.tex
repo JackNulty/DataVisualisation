@@ -1,0 +1,311 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+%
+\documentclass[
+]{article}
+\usepackage{amsmath,amssymb}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math} % this also loads fontspec
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  % xetex/luatex font selection
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\usepackage[margin=1in]{geometry}
+\usepackage{graphicx}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+% Set default figure placement to htbp
+\makeatletter
+\def\fps@figure{htbp}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\ifLuaTeX
+  \usepackage{selnolig}  % disable illegal ligatures
+\fi
+\usepackage{bookmark}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same}
+\hypersetup{
+  pdftitle={CA2 Growth of Digital Games},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+
+\title{CA2 Growth of Digital Games}
+\author{}
+\date{\vspace{-2.5em}}
+
+\begin{document}
+\maketitle
+
+\section{Introduction}\label{introduction}
+
+The gaming industry has experienced a massive growth over the past few
+decades, with the rise of Steam playing a pivitol role in shaping how
+games are published and distributed. Steam hosts a large library of
+games spanning over 90,000 with many genres, developers and price
+points. With this vast choice for players and developers understanding
+the trends and patterns in the data can be beneficial for both parties.
+This report leverages the Steam Games Dataset 2025 which includes all
+key information such as release dates, genre tags, developer and
+publisher information, and user reviews. The dataset is used to explore
+the growth of digital games on Steam and to identify the key trends and
+patterns in the data.In this report I will be exploring these trends
+using visualisation techniques in R, examples of things I will explore
+are how pricing can effect user reviews and how certain genres have
+grown and become more dominant over time. The findings will show a
+broader understanding of how game developers and publishers strategise
+their releases and how the pricing model may impact player perception
+and how the genre lines up with current trends. This report will provide
+meaningful insights for game developers and publishers to make informed
+decisions on their game releases and marketing strategies.
+
+\section{Research Questions /
+Rational}\label{research-questions-rational}
+
+\subsection{1. How does the frequeny / number of DLC's for a game effect
+user
+reviews?}\label{how-does-the-frequeny-number-of-dlcs-for-a-game-effect-user-reviews}
+
+Some developers focus on keeping their games running for years by adding
+gameplay mechanics with regular updates and DLC I want to investigate if
+this has a positive or negative effect on user reviews. I aim to see if
+the number of DLC's released for a game has an impact on the user
+reviews and how this has changed over time. I think this is interesting
+as some players may feel that the game is being milked for money and
+that the DLC's should have been included in the base game. By analysing
+this data I can see how the number of DLC's has impacted the user
+reviews.
+
+\subsection{2. How does the pricing of games affect user
+reviews?}\label{how-does-the-pricing-of-games-affect-user-reviews}
+
+The price of games has always been a crucial factor in players decision
+making when buying a game but in this research question I want to figure
+out how the pricing of games affects user reviews. I aim to see if there
+is a correlation between the price of games and the user reviews and how
+this has changed over time. I think this is interesting as higher priced
+games tend to be reviewed more harshly by players due to the higher
+expectations they have for the game. Players could also be more
+forgiving of lower priced games as they are more likely to take a chance
+on a cheaper game. By analysing this data I can see how the pricing of
+games has impacted the user reviews.
+
+\subsection{3. What genres have had trending growth over the
+years?}\label{what-genres-have-had-trending-growth-over-the-years}
+
+The third research question aims to understand what genres have had
+trending growth over the years. I aim to see if certain genres have
+become more popular over time and how this has impacted the sales of
+games in those genres. This is important as it can help developers and
+publishers understand what genres are popular and how they can
+capitalise on this trend. I want to analyse the number of releases per
+genre and see how this has changed over time by picking a few popular
+genres and seeing how they have grown over the years compared to other
+genres.
+
+\subsection{4. How has the AAA landscape changed over the
+years?}\label{how-has-the-aaa-landscape-changed-over-the-years}
+
+The fourth research question aims to understand how the AAA landscape
+has changed over the years. I aim to see how the number of AAA games has
+increased over time and how this has impacted the sales of games in this
+category. I also want to examine the price increase of these games and
+the user reviews since these price changes have come into effect.I want
+to understand the shift in the AAA landscape and see how the evolution
+of these studios and game quality with regular price increases has
+changed the publics opinion of AAA games and studios.
+
+\includegraphics{CA2_files/figure-latex/unnamed-chunk-5-1.pdf}
+
+\section{How does the frequeny / number of DLC's for a game effect user
+reviews?}\label{how-does-the-frequeny-number-of-dlcs-for-a-game-effect-user-reviews-1}
+
+The graph shows a general disconnect from the number of DLC's compared
+to the number of positive reviews. The graph does show us some valuable
+points though, we can see that for games with a very high review
+percentage there is a general look that we can see that these games tend
+to recieve small numbers of DLC's which indicates to me that the
+developers of these games continued support for these games after
+release due to positive perception. We can also see some games with a
+lot of DLC's that have a lower review percentage which indicates to me
+that these games are being milked for money and that the developers are
+not putting in the effort to make the game better. This is a very
+interesting trend as it shows that the number of DLC's does not always
+correlate with the positive reviews and that some games can be
+successful with a small number of DLC's while others can be unsuccessful
+with a large number of DLC's.
+
+\includegraphics{CA2_files/figure-latex/unnamed-chunk-6-1.pdf}
+
+\section{How does the pricing of games affect user
+reviews?}\label{how-does-the-pricing-of-games-affect-user-reviews-1}
+
+Taking a deeper dive into the meaning of this graph I can see that there
+is a non-linear relationship between the price of games and the
+percentage of positive reviews. The graph shows the very cheap games
+have a slightly lower positive percentage than the games in the range of
+about 20-30. But we also see as games get above this range players seem
+to be more harsh in the reviews as I think that these players have a
+higher expectation of the game based on the price that they paid. We can
+also see that there is outliers among the data as there is low rated
+games in in all ranges which shows that no matter the price games can be
+rated low. But in general we have seen that the price of games does have
+an impact on player perception and forgiveness for flaws within games.
+
+\includegraphics{CA2_files/figure-latex/unnamed-chunk-8-1.pdf}
+
+\includegraphics{CA2_files/figure-latex/unnamed-chunk-9-1.pdf}
+\includegraphics{CA2_files/figure-latex/unnamed-chunk-9-2.pdf}
+\includegraphics{CA2_files/figure-latex/unnamed-chunk-9-3.pdf}
+\includegraphics{CA2_files/figure-latex/unnamed-chunk-9-4.pdf}
+\includegraphics{CA2_files/figure-latex/unnamed-chunk-9-5.pdf}
+\includegraphics{CA2_files/figure-latex/unnamed-chunk-9-6.pdf}
+\includegraphics{CA2_files/figure-latex/unnamed-chunk-9-7.pdf}
+\includegraphics{CA2_files/figure-latex/unnamed-chunk-9-8.pdf}
+\includegraphics{CA2_files/figure-latex/unnamed-chunk-9-9.pdf}
+\includegraphics{CA2_files/figure-latex/unnamed-chunk-9-10.pdf}
+\includegraphics{CA2_files/figure-latex/unnamed-chunk-9-11.pdf}
+\includegraphics{CA2_files/figure-latex/unnamed-chunk-9-12.pdf}
+\includegraphics{CA2_files/figure-latex/unnamed-chunk-9-13.pdf}
+
+\includegraphics{CA2_files/figure-latex/unnamed-chunk-10-1.pdf}
+
+\section{What genres have had trending growth over the
+years?}\label{what-genres-have-had-trending-growth-over-the-years-1}
+
+These graphs can show us a few interesting things about the trends of
+game genres over the years, In the first graph we see the percentage of
+games released in the top 5 genres over the years. We can see the
+dominance of action games in the early 2010's and how the genre has
+dropped off slightly in recent years. We can also see the rise of casual
+games which in turn shows the growth of the gaming industry in these
+years as more and more casual gamers have started playing which has
+shifted developers focus to jump into the casual markets as shown in the
+graph. We can also see a large amount of Indie games released more often
+by smaller developers trying to make a name for themselves which is
+still a very steady trend in the industry. We can also see the rise of
+Massively Multiplayer games in the last few years which is a very
+interesting trend as it shows that with the increase in computational
+power and internet speeds that these games are becoming more and more
+popular.I feel these graphs show a very interesting oversight into the
+world of game genres and the trends that have come and gone over the
+years.
+
+\includegraphics{CA2_files/figure-latex/unnamed-chunk-11-1.pdf}
+
+\includegraphics{CA2_files/figure-latex/unnamed-chunk-12-1.pdf}
+
+\includegraphics{CA2_files/figure-latex/unnamed-chunk-13-1.pdf}
+
+\section{How has the AAA landscape changed over the
+years?}\label{how-has-the-aaa-landscape-changed-over-the-years-1}
+
+The AAA landscape has changed a lot over the years as we can see from
+the graphs above. The first graph shows the number of AAA games released
+per year and we can see that there is a steady increase in the number of
+AAA games released over the years.This shows that more AAA game
+developers are showing up or else due to the way I have decided to
+catagorise AAA games that the increase in price in games in recent years
+has meant smaller studios games have come up in price in line with older
+AAA titles. We can see from the graph that the price of these games has
+steadily risen in recent years with the release of the PS5 and Xbox
+series X we saw a increase in the price of games to 70 euro which is a
+large increase from the previous generation of consoles. This has led to
+a lot of backlash from players as they feel that the games are not worth
+the price that they are being sold for. This is a similar trend I saw
+previously in the pricing of games and how it affects user reviews. We
+can see that the price of AAA games has increased over the years and
+this has led to a lot of backlash from players as they feel that the
+games are not worth the price that they are being sold for. This is a
+similar trend I saw previously in the pricing of games and how it
+affects user reviews. We can also see that the genres of AAA games have
+changed over the years with the rise of Massively Multiplayer games for
+AAA studios as they use these games as potential cash cows for the
+studio as they use a live-service type game model to keep the game alive
+and keep players coming back to the game. This is interesting as it
+shows that the motivation for these big companies is to make money and
+increase profits for shareholders.
+
+\section{Conclusion}\label{conclusion}
+
+This report provided an in-depth analysis on various digital games
+development and distribution factors through analysis of the Steam Games
+dataset --- from the impact of downloadable content (DLC), through
+pricing models, to genre trends and the AAA game landscape evolution.
+
+The results showed that although an abundance of DLCs does not
+automatically translate to a better reception from users, continued
+post-launch support in moderation is generally tied to positively
+reviewed games. When it comes to pricing, though, the relationship is
+distinctly non-linear: games sold for a little bit more than the average
+get better average review scores than games sold at the bottom or the
+very top of the pricing spectrum, while pricier games are held to higher
+standards and typically received more brutal reviews on average.
+
+The evolution of genres over the years mirrored the broader changes in
+the gaming landscape. I explored the constant presence of action and
+indie titles, the proliferation of casual games that could be attributed
+to new gamers and mobile gamers, as well as the rising popularity of
+massively multiplayer genres --- all signaling the market and
+technological capability changing in their makings.
+
+Finally, the AAA space has changed a lot. Given the growing tension
+between player expectations and studio strategies as games continue to
+sell for higher prices, face more scrutiny, and pivot to evermore
+live-service work and monetisation, it ought to be no surprise that the
+data reveals a difference between expectations and reality. This
+reinforces the need for developers --- and particularly those in the AAA
+market --- to toe the line between money-grabbing practices and
+value-oriented game design.
+
+Overall this shows that with the help of data, developers, publishers
+and even gamers can better understand what is really going on in our
+industry, where they can fit themselves into it as we enter an exciting
+new period.
+
+\section{References}\label{references}
+
+\begin{itemize}
+\tightlist
+\item
+  Steam Games Dataset 2025:
+  \href{https://www.kaggle.com/datasets/nikhilroxtomar/steam-games-dataset-2025}{Steam
+  Games Dataset}
+\end{itemize}
+
+\end{document}

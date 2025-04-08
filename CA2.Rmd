@@ -3,6 +3,7 @@ title: "CA2 Growth of Digital Games"
 output:
   word_document: default
   html_document: default
+  pdf_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -11,11 +12,11 @@ knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
 
 # Introduction
 
-The gaming industry has experienced a massive growth over the past few decades, with the rise of Steam playing a pivitol role in shaping how games are published and distributed. Steam hosts a large library of games spanning over 90,000 with many genres, developers and price points. With this vast choice for players and developers understanding the trends and patterns in the data can be beneficial for both parties. This report leverages the Steam Games Dataset 2025 which includes all key information such as release dates, genre tags, developer and publisher information, and user reviews. The dataset is used to explore the growth of digital games on Steam and to identify the key trends and patterns in the data.In this report I will be exploring these trends using visualisation techniques in R, examples of things I will explore are how pricing can effect user reviews and how certain genres have grown and become more dominant over time. The findings will show a broader understanding of how game developers and publishers strategise their releases and how the pricing model may impact player perception and how the genre lines up with current trends. This report will provide meaningful insights for game developers and publishers to make informed decisions on their game releases and marketing strategies.
+The gaming industry has experienced a massive growth over the past few decades, with the rise of Steam playing a pivatol role in shaping how games are published and distributed. Steam hosts a large library of games spanning over 90,000 with many genres, developers and price points. With this vast choice for players and developers understanding the trends and patterns in the data can be beneficial for both parties. This report leverages the Steam Games Dataset 2025 which includes all key information such as release dates, genre tags, developer and publisher information, and user reviews. The dataset is used to explore the growth of digital games on Steam and to identify the key trends and patterns in the data.In this report I will be exploring these trends using visualisation techniques in R, examples of things I will explore are how pricing can effect user reviews and how certain genres have grown and become more dominant over time. The findings will show a broader understanding of how game developers and publishers strategise their releases and how the pricing model may impact player perception and how the genre lines up with current trends. This report will provide meaningful insights for game developers and publishers to make informed decisions on their game releases and marketing strategies.
 
 # Research Questions / Rational
 
-## 1. How does the frequeny / number of DLC's for a game effect user reviews?
+## 1. How does the frequency / number of DLC's for a game effect user reviews?
 
 Some developers focus on keeping their games running for years by adding gameplay mechanics with regular updates and DLC I want to investigate if this has a positive or negative effect on user reviews. I aim to see if the number of DLC's released for a game has an impact on the user reviews and how this has changed over time. I think this is interesting as some players may feel that the game is being milked for money and that the DLC's should have been included in the base game. By analysing this data I can see how the number of DLC's has impacted the user reviews.
 
@@ -32,10 +33,6 @@ The third research question aims to understand what genres have had trending gro
 The fourth research question aims to understand how the AAA landscape has changed over the years. I aim to see how the number of AAA games has increased over time and how this has impacted the sales of games in this category. I also want to examine the price increase of these games and the user reviews since these price changes have come into effect.I want to understand the shift in the AAA landscape and see how the evolution of these studios and game quality with regular price increases has changed the publics opinion of AAA games and studios.
 
 ```{r echo=FALSE}
-#install.packages("dplyr")
-#install.packages("ggplot2")
-#install.packages("lubridate")
-#install.packages("tidyr")
 # Load the required libraries
 library(dplyr)
 library(ggplot2)
@@ -205,7 +202,7 @@ ggplot(genre_percentages, aes(x = factor(release_year), y = percentage, fill = g
   )
 ```
 
-```{r}
+```{r fig.width=6, fig.height=4}
 # Get all top genres across selected years
 top_genres_all_years <- steam_games %>%
   filter(release_year %in% selected_years) %>%
@@ -364,7 +361,7 @@ ggplot(aaa_price_trend, aes(x = release_year, y = avg_price)) +
   )
 ```
 
-```{r echo=FALSE}
+```{r echo=FALSE, fig.width=10, fig.height=6}
 aaa_games %>%
   filter(!is.na(genres)) %>%
   separate_rows(genres, sep = ", ") %>%
@@ -395,3 +392,10 @@ The evolution of genres over the years mirrored the broader changes in the gamin
 Finally, the AAA space has changed a lot. Given the growing tension between player expectations and studio strategies as games continue to sell for higher prices, face more scrutiny, and pivot to evermore live-service work and monetisation, it ought to be no surprise that the data reveals a difference between expectations and reality. This reinforces the need for developers — and particularly those in the AAA market — to toe the line between money-grabbing practices and value-oriented game design.
 
 Overall this shows that with the help of data, developers, publishers and even gamers can better understand what is really going on in our industry, where they can fit themselves into it as we enter an exciting new period. 
+
+
+# References
+- Steam Games Dataset 2025: [Steam Games Dataset](https://www.kaggle.com/datasets/nikhilroxtomar/steam-games-dataset-2025)
+
+
+
